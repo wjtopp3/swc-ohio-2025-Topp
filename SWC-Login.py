@@ -44,25 +44,6 @@ def log_event(message):
     with open(LOG_FILE, "a") as f:
         f.write(f"[{timestamp}] {message}\n")
 
-# simulated login handler
-def login(user, success):
-    if login_attempts[user] >= MAX_ATTEMPTS:
-        print(f"***Account for '{user}' is locked!***")
-        log_event(f"LOCKOUT: {user} attempted login while locked.")
-        locked_users.add = user
-        num_locked += 1
-        return
-
-    if success:
-        print(f"{user} logged in successfully.")
-        login_attempts[user] = 0  # Reset on success
-    else:
-        login_attempts[user] += 1
-        print(f"Failed login attempt for {user} ({login_attempts[user]})")
-        if login_attempts[user] >= MAX_ATTEMPTS:
-            print(f"{user} has been locked out after {MAX_ATTEMPTS} failed attempts.")
-            log_event(f"LOCKOUT: {timestamp} - ERROR - {user} locked out after {MAX_ATTEMPTS} failed attempts.")
-
 
 # Track failed attempts using defaultdict(int)
 
@@ -74,14 +55,24 @@ def login(user, success):
 for user in attempts:
     login_attempts[user] += 1
 
-
-    if login_attempts[user] == MAX_ATTEMPTS and user not in locked_users:
+    if login_attempts[user] <= MAX_ATTEMPTS and user not in locked_users:
         try:
-            #encrypt the user before writing to the log
-
-
-
+            print(f"{user} logged in successfully.")
+            login_attempts[user] = 0  # Reset on success
+            encrypted_user = "*******"
+            log_event(f"{encrypted_user} logged in successfully.")
+      
         except OSError as e:
+            login_attempts[user] += 1
+            log_event(f"Failed login attempt for {user} ({login_attempts[user]})")
+            
+            if login_attempts[user] >= MAX_ATTEMPTS:
+                print(f"{user} has been locked out after {MAX_ATTEMPTS} failed attempts.")
+                log_event(f"LOCKOUT: {timestamp} - ERROR - {user} locked out after {MAX_ATTEMPTS} failed attempts.")
+                print(f"***Account for '{user}' is locked!***")
+                log_event(f"LOCKOUT: {user} attempted login while locked.")
+                locked_users.add = user
+                num_locked += 1
             print(f"Logging failed: {e}")
 
 # Print summary of all users and their attempt count
